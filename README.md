@@ -1,4 +1,4 @@
-# Trippy
+# Trippy [WiP]
 
 Trippy is an over-engineered built with CQRS, Event Sourcing, NoSQL and all this funcy stuff.
 

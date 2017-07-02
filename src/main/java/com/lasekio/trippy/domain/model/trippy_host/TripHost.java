@@ -1,11 +1,13 @@
 package com.lasekio.trippy.domain.model.trippy_host;
 
+import com.google.common.collect.ImmutableList;
 import com.lasekio.trippy.domain.common.Aggregate;
 import com.lasekio.trippy.domain.common.Event;
 import com.lasekio.trippy.domain.meta.CommandHandler;
 import com.lasekio.trippy.domain.meta.EventHandler;
 import com.lasekio.trippy.domain.model.trippy_host.command.CreateTrip;
 import com.lasekio.trippy.domain.model.trippy_host.command.ReserveSeat;
+import com.lasekio.trippy.domain.model.trippy_host.entity.Reservation;
 import com.lasekio.trippy.domain.model.trippy_host.entity.TripHostRoute;
 import com.lasekio.trippy.domain.model.trippy_host.event.SeatReserved;
 import com.lasekio.trippy.domain.model.trippy_host.event.TripHostCreated;
@@ -42,6 +44,7 @@ public class TripHost extends Aggregate<TripHost> {
         events.add(SeatReserved.builder()
             .fromRouteIndex(fromRouteIndex)
             .toRouteIndex(toRouteIndex)
+            // @TODO Seat distribution logic
             .seatIndex(0)
             .build());
 
@@ -49,13 +52,30 @@ public class TripHost extends Aggregate<TripHost> {
     }
 
     /////// Events handlers
-    @EventHandler
+    @EventHandler()
     public static TripHostState handle(TripHostCreated event) {
         return TripHostState.builder()
                 .driverName(event.driverName())
                 .routes(event.routes())
                 .pricePerKilometer(event.pricePerKilometer())
                 .build();
+    }
+
+    @EventHandler
+    public static TripHostState handle(TripHostState state, SeatReserved event) {
+
+        Reservation reservation = Reservation.builder()
+                .fromRouteIndex(event.fromRouteIndex())
+                .toRouteIndex(event.toRouteIndex())
+                .seatIndex(event.seatIndex())
+                .build();
+
+        ImmutableList<Reservation> reservations = new ImmutableList.Builder<Reservation>()
+                .addAll(state.reservations())
+                .add(reservation)
+                .build();
+
+        return state.withReservations(reservations);
     }
 
     //// Utils

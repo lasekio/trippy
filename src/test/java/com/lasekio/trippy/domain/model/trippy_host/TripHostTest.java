@@ -3,6 +3,7 @@ package com.lasekio.trippy.domain.model.trippy_host;
 import com.lasekio.trippy.domain.common.Event;
 import com.lasekio.trippy.domain.model.trippy_host.command.CreateTrip;
 import com.lasekio.trippy.domain.model.trippy_host.command.ReserveSeat;
+import com.lasekio.trippy.domain.model.trippy_host.entity.Reservation;
 import com.lasekio.trippy.domain.model.trippy_host.entity.TripHostRoute;
 import com.lasekio.trippy.domain.model.trippy_host.event.SeatReserved;
 import com.lasekio.trippy.domain.model.trippy_host.event.TripHostCreated;
@@ -93,25 +94,42 @@ public class TripHostTest {
     }
 
 
-//    @Test public void testReserveSeatOnReserved() {
-//        ArrayList<TripHostRoute> routes = new ArrayList<TripHostRoute>(1);
-//        routes.add(torunWarszawaRoute);
-//
-//        ReserveSeat command = ReserveSeat.builder()
-//                .fromRouteId(torunWarszawaRoute.id())
-//                .toRouteId(torunWarszawaRoute.id())
-//                .build();
-//
-//        TripHostState state = TripHostState.builder()
-//                .driverName("Dave")
-//                .pricePerKilometer(2)
-//                .routes(routes)
-//                .seatsCount(4)
-//                .build();
-//
-//        List<Event> events = TripHost.handle(state, command);
-//
-//        assertNotEquals("Handle must return some event", 0, events.size());
-//    }
+    @Test public void handleSeatReservedEvent() {
+
+        ArrayList<TripHostRoute> routes = new ArrayList<>(1);
+        routes.add(torunWarszawaRoute);
+
+        TripHostState state = TripHostState.builder()
+                .driverName("Dave")
+                .pricePerKilometer(2)
+                .routes(routes)
+                .seatsCount(4)
+                .build();
+
+        SeatReserved event = SeatReserved.builder()
+                .fromRouteIndex(0)
+                .toRouteIndex(0)
+                .seatIndex(0)
+                .build();
+
+        TripHostState newState = TripHost.handle(state, event);
+
+        assertEquals(1, newState.reservations().size());
+
+        Reservation reservation = newState.reservations().get(0);
+
+        assertEquals(event.seatIndex(), reservation.seatIndex());
+        assertEquals(event.fromRouteIndex(), reservation.fromRouteIndex());
+        assertEquals(event.toRouteIndex(), reservation.toRouteIndex());
+    }
+
+    /*
+     *                | route index | Seat 1 | Seat 2 | Seat 3 | Seat 4 |
+     * Toruń-Płock    |      0      |    A   |   B    |        |   D    |
+     * Płock-Warszawa |      1      |        |   B    |   C    |   E    |
+     *
+     * A B C D E - 5 passenger
+     *
+     */
+//    public void testSeatDistribution();
 }
-curl -i -d  ~/Downloads/simpleevent.json "http://docker.local:2113/streams/newstream444"
