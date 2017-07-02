@@ -58,6 +58,8 @@ public class TripHost extends Aggregate<TripHost> {
                 .driverName(event.driverName())
                 .routes(event.routes())
                 .pricePerKilometer(event.pricePerKilometer())
+                // @TODO it must come from command!
+                .seatsCount(4)
                 .build();
     }
 
